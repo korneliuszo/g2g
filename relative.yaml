@@ -1,0 +1,22 @@
+gcodesettings: &gcodesettings
+  penwidth: 0.35
+  offsetX: 0
+  offsetY: 0
+  zdown: 0
+  zup: 1.5
+
+gcodeinitlines: &gcodeinitlines |
+  G21        ;metric values
+  G90        ;absolute positioning
+  M107       ;start with the fan off
+  G28 Z0     ;move Z to min endstops
+  G92 X0 Y0  ;reset XY to here
+  G0 F500   ;speed 500mm/min
+
+process:
+  - in: .top
+    out: .gcode
+    decoder: gerber
+    plotterconfig: *gcodesettings
+    initlines: *gcodeinitlines
+ 
