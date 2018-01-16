@@ -1,0 +1,4 @@
+Legalese: AGPLv3 - it's easy to script and possible to convert to LGPL code
+when converting code to library (or even used as such)
+
+My thoughts: well it could even be a HappyBunny or WTFPL
