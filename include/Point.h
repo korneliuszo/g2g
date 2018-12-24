@@ -27,6 +27,11 @@ public:
 		x+=a.x;
 		y+=a.y;
 	};
+	void operator-=(const Point& a)
+	{
+		x-=a.x;
+		y-=a.y;
+	};
 	Point operator-(const Point& a) const
 	{
 		return Point(x-a.x,y-a.y);

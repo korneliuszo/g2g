@@ -33,6 +33,20 @@ std::shared_ptr<Command> GerberDecoder::processline(std::string line)
 		scale=25.4;
 		return std::make_shared<StringCommand>("G21\n"); // metric
 	}
+	else if (line.find("%MOMM*%") == 0)
+	{
+		//metric so enable conversion
+		scale=1;
+		return std::make_shared<StringCommand>("G21\n"); // metric
+	}	
+	else if (line.find("%LPD*%") == 0)
+	{
+		//we support only dark
+	}
+	else if (line.find("G01*") == 0)
+	{
+		//we support only linear mode
+	}
 	else if (line.find("%OF") == 0)
 	{
 		//ignore offset
@@ -95,6 +109,25 @@ std::shared_ptr<Command> GerberDecoder::processline(std::string line)
 		int number=std::stoi(line.substr(1));
 		current_aperture = apertures[number];
 	}
+	else if (line.find("G36") == 0)
+	{
+		g36=true;
+	}
+	else if (line.find("G37") == 0)
+	{
+		g36=false;
+		Point center;
+		for(auto it=g36_poly.begin();it<g36_poly.end();it++)
+			center+=*it;
+		center.x = center.x / g36_poly.size();
+		center.y = center.y / g36_poly.size();
+		for(auto it=g36_poly.begin();it<g36_poly.end();it++)
+			*it-=center;
+		std::shared_ptr<Poly> cmd = std::make_shared<Poly>(g36_poly);
+		g36_poly.resize(0);
+		cmd->set_exposure(center,center);
+		return cmd;
+	}
 	else if (line.find("X") == 0)
 	{
 		// lineing!
@@ -103,23 +136,30 @@ std::shared_ptr<Command> GerberDecoder::processline(std::string line)
 		double x = scale*std::stoi(line.substr(1,line.find("Y")))/pow(10,dotpointx);
 		double y = scale*std::stoi(line.substr(line.find("Y")+1,line.find("D")))/pow(10,dotpointy);
 		int d = std::stoi(line.substr(line.find("D")+1));
-		if (d == 2)
+		if(g36)
 		{
-			last_point=Point(x,y);
+			g36_poly.push_back(Point(x,y));
 		}
-		else if (d == 1)
+		else
 		{
-			std::shared_ptr<PlotCommand> cmd = std::shared_ptr<PlotCommand>(current_aperture->clone());
-			cmd->set_exposure(last_point,Point(x,y));
-			last_point=Point(x,y);
-			return cmd;
-		}
-		else if (d == 3)
-		{
-			std::shared_ptr<PlotCommand> cmd = std::shared_ptr<PlotCommand>(current_aperture->clone());
-			cmd->set_exposure(Point(x,y),Point(x,y));
-			last_point=Point(x,y);
-			return cmd;
+			if (d == 2)
+			{
+				last_point=Point(x,y);
+			}
+			else if (d == 1)
+			{
+				std::shared_ptr<PlotCommand> cmd = std::shared_ptr<PlotCommand>(current_aperture->clone());
+				cmd->set_exposure(last_point,Point(x,y));
+				last_point=Point(x,y);
+				return cmd;
+			}
+			else if (d == 3)
+			{
+				std::shared_ptr<PlotCommand> cmd = std::shared_ptr<PlotCommand>(current_aperture->clone());
+				cmd->set_exposure(Point(x,y),Point(x,y));
+				last_point=Point(x,y);
+				return cmd;
+			}
 		}
 	}
 
@@ -127,6 +167,11 @@ std::shared_ptr<Command> GerberDecoder::processline(std::string line)
 	{
 		//close block
 	}
+	else if (line.find("G04") == 0)
+	{
+		//comment
+		return std::make_shared<StringCommand>("; "+line+"\n"); // metric
+	}	
 	else
 	{
 		throw std::string("Not decipherable: "+line);

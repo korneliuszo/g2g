@@ -1,5 +1,5 @@
 gcodesettings: &gcodesettings
-  penwidth: 0.35
+  penwidth: 0.25
   offsetX: 0
   offsetY: 0
   zdown: 0
@@ -14,7 +14,7 @@ gcodeinitlines: &gcodeinitlines |
   G0 F500   ;speed 500mm/min
 
 process:
-  - in: .top
+  - in: .gbr
     out: .gcode
     decoder: gerber
     plotterconfig: *gcodesettings
