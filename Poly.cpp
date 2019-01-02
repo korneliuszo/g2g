@@ -61,9 +61,9 @@ std::string Poly::Plot(std::shared_ptr<GcodePlotter> plotter)
 	}
 	std::stringstream gcode;
 	gcode << ";Poly\n";
-	gcode << plotter->MoveToFast(start);
+	//gcode << plotter->MoveToFast(start);
 	gcode << plotter->FillPoly(nodes);
-	gcode << plotter->MoveTo(end);
+	//gcode << plotter->MoveTo(end);
 	return gcode.str();
 }
 

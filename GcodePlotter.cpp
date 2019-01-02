@@ -7,6 +7,15 @@
 
 #include "GcodePlotter.h"
 
+#include <boost/polygon/polygon.hpp>
+
+typedef boost::polygon::point_data<int> point;
+typedef boost::polygon::polygon_set_data<int> polygon_set;
+typedef boost::polygon::polygon_data<int> polygon;
+typedef std::pair<point, point> edge;
+using namespace boost::polygon::operators;
+
+
 GcodePlotter::GcodePlotter(double penwidth_, Point offset_, double zdown_, double zup_, bool debug_)
 : penwidth(penwidth_), offset(offset_), zdown(zdown_), zup(zup_), debug(debug_)
 {
@@ -111,83 +120,41 @@ std::string GcodePlotter::FillCircle(Point center, double r)
 }
 std::vector<Point> GcodePlotter::ShrinkNodes(std::vector<Point> nodes)
 {
-	std::vector<Point> newnodes;
 
-	bool lastremoved=false;
-	bool firstremoved=false;
-
-	Point center;
-	for (auto node:nodes)
-	{
-		center+=node;
-	}
-	center=center.div(nodes.size());
-
-	for (int i=0;i<nodes.size();i++)
-	{
-		int prev,next;
-		if (i==0)
-			prev=nodes.size()-1;
-		else
-			prev=i-1;
-		if (i==nodes.size()-1)
-			next=0;
-		else
-			next=i+1;
-
-		Point newpoint=nodes[i];
-		Point nvect=(nodes[next]-nodes[i]);
-		Point pvect=(nodes[prev]-nodes[i]);
-		Point cvect=(nodes[i]-center);
-
-		if (cvect.len()>0)
-		{
-			newpoint += -cvect.div(cvect.len()/std::min(penwidth/2,cvect.len()));
-			//newpoint += nvect.div(nvect.len()/(penwidth/3));
-			//newpoint += pvect.div(pvect.len()/(penwidth/3));
-
-		}
-		if ((nvect.len()>penwidth/4 && pvect.len()>penwidth/4) || lastremoved || (i==nodes.size()-1 && firstremoved))
-		{
-			if (isnan(newpoint.x) || isnan(newpoint.y))
-				throw "Wololo";
-			newnodes.push_back(newpoint);
-			lastremoved=false;
-		}
-		else
-		{
-			lastremoved=true;
-			if (i==0)
-				firstremoved=true;
-		}
-	}
-	return newnodes;
 }
 std::string GcodePlotter::FillPoly(std::vector<Point> nodes)
 {
 	std::stringstream gcode;
-	int maxlen;
+	polygon_set a;
+	std::vector<point> pts;
+	for (auto i: nodes)
+		pts.push_back(point(int(i.x*1000), int(i.y*1000)));
+	polygon poly;
+	boost::polygon::set_points(poly, pts.begin(), pts.end());
+	a+=poly;
+	int maxvert=0;
 	do
 	{
-		nodes=ShrinkNodes(nodes);
-		maxlen=0;
-		Point center;
-		for (auto i: nodes)
-			center+=i;
-		center=center.div(nodes.size());
-
-		for (auto i: nodes)
+		a.resize(-int(penwidth/2*1000),true,10);
+		maxvert=0;
+		std::vector<polygon> polys;
+		polys.clear();
+		a.get(polys);
+		for(auto it=polys.begin();it<polys.end();it++)
 		{
-			gcode << MoveTo(i);
-
-			if((i-center).x>maxlen)
-				maxlen=(i-center).x;
-			if((i-center).y>maxlen)
-				maxlen=(i-center).y;
+			auto b=it->begin();
+			gcode << MoveToFast(Point(b->x()/1000.0,b->y()/1000.0),false);
+			for(auto itb=b;itb<it->end();itb++)
+			{
+				gcode << MoveTo(Point(itb->x()/1000.0,itb->y()/1000.0),false);
+				maxvert++;
+			}
+			gcode << MoveTo(Point(b->x()/1000.0,b->y()/1000.0),false);
 		}
-		gcode << MoveTo(nodes[0]);
+		//a.shrink(int(penwidth/2*1000));
+		a.clean();
 	}
-	while(nodes.size()>2);
+	while(maxvert>2);
 	return gcode.str();
 }
 
