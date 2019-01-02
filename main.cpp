@@ -33,7 +33,7 @@ int main(int argv, char ** argc)
 		std::string decodertype=process["decoder"].as<std::string>();
 
 		if(decodertype == "gerber")
-			decoder.reset(new GerberDecoder());
+			decoder.reset(new GerberDecoder(process["decoderconfig"]));
 
 
 		outfile << process["initlines"].as<std::string>();

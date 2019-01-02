@@ -13,7 +13,6 @@
 #include "Rect.h"
 
 #include <math.h>
-
 std::shared_ptr<Command> GerberDecoder::processline(std::string line)
 {
 	if (amoc8)
@@ -133,8 +132,8 @@ std::shared_ptr<Command> GerberDecoder::processline(std::string line)
 		// lineing!
 		//X0001000Y0001000D02*
 
-		double x = scale*std::stoi(line.substr(1,line.find("Y")))/pow(10,dotpointx);
-		double y = scale*std::stoi(line.substr(line.find("Y")+1,line.find("D")))/pow(10,dotpointy);
+		double x = flipx*scale*std::stoi(line.substr(1,line.find("Y")))/pow(10,dotpointx);
+		double y = flipy*scale*std::stoi(line.substr(line.find("Y")+1,line.find("D")))/pow(10,dotpointy);
 		int d = std::stoi(line.substr(line.find("D")+1));
 		if(g36)
 		{

@@ -18,5 +18,7 @@ process:
     out: .gcode
     decoder: gerber
     plotterconfig: *gcodesettings
+    decoderconfig:
+        flipx: true
     initlines: *gcodeinitlines
  
