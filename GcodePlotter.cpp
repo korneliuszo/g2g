@@ -133,9 +133,15 @@ std::string GcodePlotter::FillPoly(std::vector<Point> nodes)
 	boost::polygon::set_points(poly, pts.begin(), pts.end());
 	a+=poly;
 	int maxvert=0;
+	a.resize(-int(penwidth/2*1000),true,10);
+	{
+		std::vector<polygon> polys;
+		polys.clear();
+		a.get(polys);
+		gcode << MoveToFast(Point(polys[0].begin()->x()/1000.0,polys[0].begin()->y()/1000.0),false);
+	}
 	do
 	{
-		a.resize(-int(penwidth/2*1000),true,10);
 		maxvert=0;
 		std::vector<polygon> polys;
 		polys.clear();
@@ -143,7 +149,10 @@ std::string GcodePlotter::FillPoly(std::vector<Point> nodes)
 		for(auto it=polys.begin();it<polys.end();it++)
 		{
 			auto b=it->begin();
-			gcode << MoveToFast(Point(b->x()/1000.0,b->y()/1000.0),false);
+			if(polys.size()==1)
+				gcode << MoveTo(Point(b->x()/1000.0,b->y()/1000.0),false);
+			else
+				gcode << MoveToFast(Point(b->x()/1000.0,b->y()/1000.0),false);
 			for(auto itb=b;itb<it->end();itb++)
 			{
 				gcode << MoveTo(Point(itb->x()/1000.0,itb->y()/1000.0),false);
@@ -151,7 +160,7 @@ std::string GcodePlotter::FillPoly(std::vector<Point> nodes)
 			}
 			gcode << MoveTo(Point(b->x()/1000.0,b->y()/1000.0),false);
 		}
-		//a.shrink(int(penwidth/2*1000));
+		a.resize(-int(penwidth/2*1000),true,10);
 		a.clean();
 	}
 	while(maxvert>2);
