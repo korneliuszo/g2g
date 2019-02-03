@@ -1,0 +1,25 @@
+
+difference(){
+    union(){
+        translate([0,0,2.5])
+            cube([55,50,5],true);
+        translate([0,20,12.5])
+            cube([36,10,25],true);
+        translate([0,-20,12.5])
+            cube([36,10,25],true);
+    }
+    translate([-43/2,38/2,-1])
+        cylinder(h=15,r=4.5/2);
+    translate([43/2,-38/2,-1])
+        cylinder(h=15,r=4.5/2);
+    translate([0,0,20])
+    union()
+    {
+    translate([-13,2,0])
+        rotate([90,0,0])
+        cylinder(51,d=6,center=true);
+    translate([13,2,0])
+        rotate([90,0,0])
+        cylinder(51,d=6,center=true);
+    }
+}
