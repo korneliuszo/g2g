@@ -12,5 +12,5 @@ add_executable(g2g
 include_directories ("include")
 set_property(TARGET g2g PROPERTY CXX_STANDARD 11)
 target_link_libraries(g2g X11 pthread yaml-cpp)
-#set(CMAKE_BUILD_TYPE RelWithDebInfo)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+#set(CMAKE_BUILD_TYPE Debug)
