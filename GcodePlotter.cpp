@@ -21,8 +21,10 @@ GcodePlotter::GcodePlotter(double penwidth_, Point offset_, double zdown_, doubl
 {
 	if(debug)
 	{
+#ifdef WITH_CIMG
 		image=cimg_library::CImg<float>(1000,1000,1,1,0);
 		draw_disp=cimg_library::CImgDisplay(image,"Intensity profile");
+#endif
 	}
 	//image.fill(0);
 };
@@ -45,11 +47,13 @@ std::string GcodePlotter::MoveTo(Point to,bool absolute)
 	gcode << "G1 X" << to.x << " Y" << to.y << "\n";
 	if (debug && pendown)
 	{
+#ifdef WITH_CIMG
 		float colour[]={1};
 		image.draw_line((int)(lastpos.x*dscale),(int)(lastpos.y*dscale),
 				(int)(to.x*dscale),(int)(to.y*dscale),colour);
 		image.draw_circle((int)(to.x*dscale),(int)(to.y*dscale),(int)(penwidth/2*dscale),colour);
 		image.display(draw_disp);
+#endif
 	}
 	lastpos=to;
 
@@ -73,9 +77,11 @@ std::string GcodePlotter::PenDown()
 {
 	pendown=true;
 	if(debug){
+#ifdef WITH_CIMG
 		float colour[]={1};
 		image.draw_circle((int)(lastpos.x*dscale),(int)(lastpos.y*dscale),(int)(penwidth/2*dscale),colour);
 		image.display(draw_disp);
+#endif
 	}
 	std::stringstream gcode;
 	gcode << "G1 Z" << zdown << "\n";

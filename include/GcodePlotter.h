@@ -13,15 +13,19 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#ifdef WITH_CIMG
 #include <CImg.h>
+#endif
 
 class GcodePlotter
 {
 private:
 	const double dscale=10;
 	std::vector<Point> ShrinkNodes(std::vector<Point> nodes);
+#ifdef WITH_CIMG
 	cimg_library::CImg<float> image;
 	cimg_library::CImgDisplay draw_disp;
+#endif
 	bool debug;
 	Point offset;
 	double zdown;
